@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XDR Incident Browser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px); /* Full viewport height minus margin */
+            overflow: hidden; /* Prevent body scroll if content fits */
+        }
+        .row {
+            margin-bottom: 10px;
+        }
+        .row-1 h1 {
+            margin: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .row-2 {
+            display: flex;
+            flex-grow: 1; /* Allows this row to take up available vertical space */
+            gap: 15px; /* Space between columns */
+            min-height: 0; /* Important for flex items in some browsers */
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .left-column {
+            flex: 1; /* Takes up equal space as right column, or adjust as needed */
+        }
+        .left-column textarea {
+            width: 100%;
+            height: 100%; /* Fill the column height */
+            resize: none; /* Disable manual resizing */
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        .right-column {
+            flex: 1; /* Takes up equal space as left column */
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Space between top and bottom sections */
+            min-height: 0; /* Important for flex items */
+        }
+        .right-column-top {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .input-group label {
+            min-width: 100px; /* Align labels */
+        }
+        .input-group input[type="text"],
+        .input-group input[type="password"] {
+            flex-grow: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .input-group button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+        .right-column-bottom {
+            flex-grow: 1; /* Takes up all remaining space in the right column */
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Important for flex items */
+        }
+        .right-column-bottom label {
+            margin-bottom: 5px;
+        }
+        .right-column-bottom select {
+            flex-grow: 1; /* Allows the select box to fill available space */
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 100px; /* Minimum height for visibility, adjust as needed */
+        }
+        .right-column-bottom button {
+            max-width: 200px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }        
+        .right-column-bottom button:hover {
+            background-color: #0056b3;
+        }        
+        .right-column-bottom button:disabled {
+          background-color: #cccccc; /* Gray background */
+          color: #666666;           /* Darker text color */
+          cursor: not-allowed;      /* Change cursor to indicate it's not clickable */
+          opacity: 0.7;             /* Make it slightly transparent (optional) */
+        }
+        .row-3 {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .row-3 .input-group {
+            width: 100%;
+        }
+        .row-3 .input-group input {
+            width: 100%;
+        }
+        #status-bar {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+            flex-shrink: 0; /* Prevent status bar from shrinking */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Row 1: Title -->
+    <div class="row row-1">
+        <h1>XDR Incident browser</h1>
+    </div>
+
+    <!-- Row 2: Divided into 2 columns -->
+    <div class="row row-2">
+        <!-- 2.1. Left column: a text area (30 lines height) -->
+        <div class="column left-column">
+            <textarea id="incident_details" placeholder="Incident details will appear here..." rows="30"></textarea>
+        </div>
+
+        <!-- 2.2. Right column: divided into two sections -->
+        <div class="column right-column">
+            <!-- 2.2.1. Top section -->
+            <div class="right-column-top">
+                <!-- 2.2.1.1. A text field (one line) with a label on its left, named "Client ID" -->
+                <div class="input-group">
+                    <label for="client_id">Client ID:</label>
+                    <input type="text" id="client_id" name="client_id" placeholder="Enter Client ID">
+                </div>
+                <!-- 2.2.1.2. A text field (one line) with a label on its left, named "Client Password" -->
+                <div class="input-group">
+                    <label for="client_password">Client Password:</label>
+                    <input type="password" id="client_password" name="client_password" placeholder="Enter Client Password">
+                    <!-- 2.2.1.3. A button named "Authenticate" -->
+                    <button type="button" id="authenticate_button">Authenticate</button>
+                </div>
+            </div>
+
+            <!-- 2.2.2. Bottom section (all the remaining lines): a drop-down selector named "Incident list" -->
+            <div class="right-column-bottom">
+                <button type="button" id="load_incidents_button" disabled>Load Incidents</button>
+                <label for="incident_list">Incident list:</label>
+                <select id="incident_list" name="incident_list" size="10">
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: A text field named "Selected incident field - filter" -->
+    <!-- 
+    <div class="row row-3">
+        <div class="input-group">
+            <label for="filter_field">Selected incident field - filter:</label>
+            <input type="text" id="filter_field" name="filter_field" placeholder="e.g., source_ip, username, status">
+        </div>
+    </div>
+     -->
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+        Status: Application ready.
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const authenticateButton = document.getElementById('authenticate_button');
+            const clientIdInput = document.getElementById('client_id');
+            const clientPasswordInput = document.getElementById('client_password');
+            const statusBar = document.getElementById('status-bar');
+            const loadIncidentsButton = document.getElementById('load_incidents_button');
+            const incidentListSelect = document.getElementById('incident_list');
+            const incidentDetailsTextArea = document.getElementById('incident_details');
+
+			// ---
+			// --- Handle click on the Authenticate Button
+			// ---
+            authenticateButton.addEventListener('click', function() {
+                const clientId = clientIdInput.value;
+                const clientPassword = clientPasswordInput.value;
+
+                statusBar.textContent = 'Status: Attempting authentication...';
+
+                // Make an AJAX request to the Flask backend
+                fetch('/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        client_id: clientId,
+                        client_password: clientPassword
+                    }),
+                })
+                .then(response => response.json()) // Parse the JSON response
+                .then(data => {
+                    // Handle the JSON data from the server
+                    if (data.success) {
+                        statusBar.textContent = 'Status: Authentication successful!';
+                        // Enable other parts of the UI
+                        loadIncidentsButton.disabled = false;
+                    } else {
+                        statusBar.textContent = 'Status: Authentication failed! Error: ' + data.message;
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    statusBar.textContent = error;
+                });
+
+            });
+
+			// ---
+			// --- Handle click on the Load Incident button
+			// ---
+            loadIncidentsButton.addEventListener('click', function() {
+
+                statusBar.textContent = 'Status: Loading incidents...';
+
+                // Make an AJAX request to the Flask backend
+                fetch('/load_incidents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                    }),
+                })
+                .then(response => response.json()) // Parse the JSON response
+                .then(data => {
+                    // Handle the JSON data from the server
+                    if (data.success) {
+                        statusBar.textContent = 'Status: Incidents loaded.';
+                        // Populate other parts of the UI
+                        data.incident_data.forEach(item => {
+                            //console.log(item);
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.text = item.created + " - " + item.title;
+                            incidentListSelect.appendChild(option);
+                        })
+                    } else {
+                        statusBar.textContent = 'Status: Error loading incidents: ' + data.message;
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    statusBar.textContent = error;
+                });
+            });
+            
+            // ---
+            // --- Handle Incident Selection event
+            // ---
+            incidentListSelect.addEventListener('change', function() {
+            	// Get the selected value
+            	const selectedIncident = this.value;
+            	console.log('Selected Incident:', selectedIncident); // For debugging
+            	
+            	if (selectedIncident) {
+            	    // Make an AJAX request to the Flask backend
+            	    fetch('/select_incident', {
+            	        method: 'POST',
+            	        headers: {
+            	            'Content-Type': 'application/json'
+            	        },
+            	        body: JSON.stringify({ // Convert the JavaScript object to a JSON string
+            	            incident_id: selectedIncident
+            	        })
+            	    })
+            	    .then(response => response.json()) // Parse the JSON response
+					.then(data => {
+						// Handle the JSON data from the server
+						if (data.success) {
+							statusBar.textContent = 'Status: Incident details loaded.';
+							// Update other parts of the UI
+							const formattedJson = JSON.stringify(data.incident_details, null, 2);
+							incidentDetailsTextArea.textContent = formattedJson;
+							console.log(data);
+						} else {
+							statusBar.textContent = 'Status: Error loading incident details: ' + data.message;
+							incidentDetailsTextArea.textContent = "Unable to load incident details"
+						}
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+						statusBar.textContent = error;
+					});            	} else {
+            	    responseArea.innerHTML = 'Server Response will appear here.';
+            	}
+
+			});
+            
+        });
+    </script>
+
+</body>
+</html>
