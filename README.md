@@ -1,30 +1,19 @@
-```markdown
 # Cisco XDR Incident Browser
 
 This repository contains a Flask-based web application designed to browse and display incidents from Cisco XDR. It provides a simple interface to authenticate with the Cisco XDR API, load recent incidents, and view detailed information for a selected incident.
 
-## Table of Contents
-
-- [Cisco XDR Incident Browser](#cisco-xdr-incident-browser)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Technologies Used](#technologies-used)
-  - [File Structure](#file-structure)
-  - [Setup and Installation](#setup-and-installation)
-    - [Prerequisites](#prerequisites)
-    - [Clone the Repository](#clone-the-repository)
-    - [Install Dependencies](#install-dependencies)
-    - [Cisco XDR API Credentials](#cisco-xdr-api-credentials)
-    - [Running the Application](#running-the-application)
-  - [Usage](#usage)
-  - [Configuration](#configuration)
-  - [Security Considerations](#security-considerations)
-  - [License](#license)
-
 ## Overview
 
 The Cisco XDR Incident Browser is a lightweight web application that demonstrates how to interact with the Cisco XDR API to retrieve and display security incident data. It's built using Python and the Flask web framework, making it easy to deploy and understand.
+The incident data will be shown in JSON format, showing all the raw information that is associated to the incident.
+
+A useful use case for this application is the following:
+* You want to create a condition for a Trigger of **Incident Rule** type, but you don't know the exact name of the Incident fields to be used in the condition.
+* The raw view of Incident data, in JSON format, will show you all the possible field that you can use in your conditions.
+
+## Screenshot
+
+![screenshot](https://github.com/user-attachments/assets/7dd2ff3b-db33-486c-801a-549096197e21)
 
 ## Features
 
@@ -60,7 +49,7 @@ Follow these steps to get the Cisco XDR Incident Browser up and running on your 
 First, clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/xdr-incident-browser.git
+git clone https://github.com/pglave/xdr-incident-browser.git
 cd xdr-incident-browser
 ```
 
@@ -74,7 +63,10 @@ pip install Flask requests
 
 ### Cisco XDR API Credentials
 
-To use this application, you will need a Client ID and Client Password for your Cisco XDR API integration. These credentials will be entered directly into the web application's authentication form.
+The use case for this application assumes you have a valid user to a Cisco XDR tenant.
+To use the application, you will need to generate a Client ID and Client Password for your Cisco XDR API integration, while logged in to your XDR tenant.
+These credentials will be entered directly into the web application's authentication form.
+For further documentation about how to generate the API keys, refer to [Cisco XDR documentation](https://docs.xdr.security.cisco.com/Content/Administration/api-clients.htm?cshid=7003).
 
 ### Running the Application
 
@@ -123,8 +115,4 @@ The `ciscoxdr.py` file contains some configurable parameters:
 *   **Production Deployment**: The Flask development server (`app.run(debug=True)`) is not suitable for production environments. For production, use a robust WSGI server like Gunicorn or uWSGI.
 *   **API Credentials**: Ensure that your Cisco XDR API Client ID and Client Password are kept confidential and are not exposed in client-side code or public repositories.
 
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
-```  
  
